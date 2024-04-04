@@ -64,13 +64,20 @@ class Renderer {
 
         // TODO: implement drawing here!
         // For each model
-        //   * For each vertex
-        //     * transform endpoints to canonical view volume
-        //   * For each line segment in each edge
-        //     * clip in 3D
-        //     * project to 2D
-        //     * translate/scale to viewport (i.e. window)
-        //     * draw line
+        this.scene.models.forEach((model) => {
+            //   * For each vertex
+            model.vertices.forEach((vert) => {
+                //   * transform endpoints to canonical view volume
+
+            });
+            //   * For each line segment in each edge
+            model.edges.forEach((edge) => {
+                //     * clip in 3D
+                //     * project to 2D
+                //     * translate/scale to viewport (i.e. window)
+                //     * draw line
+            });
+        });
     }
 
     // Get outcode for a vertex
@@ -105,8 +112,8 @@ class Renderer {
     // z_min:        float (near clipping plane in canonical view volume)
     clipLinePerspective(line, z_min) {
         let result = null;
-        let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z); 
-        let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
+        let p0 = CG.Vector3(line.pt0.x, line.pt0.y, line.pt0.z); 
+        let p1 = CG.Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
         let out0 = this.outcodePerspective(p0, z_min);
         let out1 = this.outcodePerspective(p1, z_min);
         
