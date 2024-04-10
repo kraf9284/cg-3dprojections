@@ -66,13 +66,15 @@ class Renderer {
         // For each model
         this.scene.models.forEach((model) => {
             //   * For each vertex
+            let new_verts = [];
             model.vertices.forEach((vert) => {
                 //   * transform endpoints to canonical view volume
 
             });
             //   * For each line segment in each edge
             model.edges.forEach((edge) => {
-                //     * clip in 3D
+                //     * clip in 3D - Skip for now
+
                 //     * project to 2D
                 //     * translate/scale to viewport (i.e. window)
                 //     * draw line

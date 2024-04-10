@@ -6,7 +6,7 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     // 2. rotate VRC such that (u,v,n) align with (x,y,z)
     // 3. shear such that CW is on the z-axis
     // 4. scale such that view volume bounds are ([z,-z], [z,-z], [-1,zmin])
-
+    // use perspective projection example on canvas
     // ...
     // let transform = Matrix.multiply([...]);
     // return transform;
@@ -26,6 +26,7 @@ function mat4x4MPer() {
 function mat4x4Viewport(width, height) {
     let viewport = new Matrix(4, 4);
     // viewport.values = ...;
+    // slides: w/2 h/2
     return viewport;
 }
 
