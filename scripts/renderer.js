@@ -61,26 +61,43 @@ class Renderer {
     //
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // TODO: implement drawing here!
+    
         // For each model
         this.scene.models.forEach((model) => {
-            //   * For each vertex
-            let new_verts = [];
-            model.vertices.forEach((vert) => {
-                //   * transform endpoints to canonical view volume
-
+            // Transform vertices to canonical view volume and then to viewport
+            let new_verts = Object.values(model.vertices).map((vert) => { // Use Object.values() to convert the object to an array
+                // Transform endpoints to canonical view volume
+                let transformedVert = Matrix.multiply(this.scene.viewMatrix, vert);
+                transformedVert = Matrix.multiply(this.scene.projectionMatrix, transformedVert);
+    
+                // Project to 2D
+                let x_proj = transformedVert[0] / transformedVert[3];
+                let y_proj = transformedVert[1] / transformedVert[3];
+    
+                // Translate/scale to viewport (window)
+                let x_viewport = (x_proj + 1) * (this.canvas.width / 2);
+                let y_viewport = (1 - y_proj) * (this.canvas.height / 2);
+    
+                return [x_viewport, y_viewport];
             });
-            //   * For each line segment in each edge
+    
+            // For each line segment in each edge
             model.edges.forEach((edge) => {
-                //     * clip in 3D - Skip for now
-
-                //     * project to 2D
-                //     * translate/scale to viewport (i.e. window)
-                //     * draw line
+                // Draw line
+                this.drawLine(new_verts[edge[0]], new_verts[edge[1]]);
             });
         });
     }
+    
+    
+    // Helper function to draw a line between two points
+    drawLine(point1, point2) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(point1[0], point1[1]);
+        this.ctx.lineTo(point2[0], point2[1]);
+        this.ctx.stroke();
+    }
+    
 
     // Get outcode for a vertex
     // vertex:       Vector4 (transformed vertex in homogeneous coordinates)
@@ -187,7 +204,7 @@ class Renderer {
                 }
             }
             else {
-                model.center = Vector4(scene.models[i].center[0],
+                model.center = CG.Vector4(scene.models[i].center[0],
                                        scene.models[i].center[1],
                                        scene.models[i].center[2],
                                        1);

@@ -1,15 +1,46 @@
 import { Matrix, Vector } from "./matrix.js";
 
 // create a 4x4 matrix to the perspective projection / view matrix
-function mat4x4Perspective(prp, srp, vup, clip) {
-    // 1. translate PRP to origin
-    // 2. rotate VRC such that (u,v,n) align with (x,y,z)
-    // 3. shear such that CW is on the z-axis
-    // 4. scale such that view volume bounds are ([z,-z], [z,-z], [-1,zmin])
-    // use perspective projection example on canvas
-    // ...
-    // let transform = Matrix.multiply([...]);
-    // return transform;
+function mat4x4Perspective(prp, srp, vup, clip) {    
+    // 1. Translate PRP to origin
+    const translationMatrix = [
+        [1, 0, 0, -prp[0]],
+        [0, 1, 0, -prp[1]],
+        [0, 0, 1, -prp[2]],
+        [0, 0, 0, 1]
+    ];
+
+    // 2. Rotate VRC such that (u,v,n) align with (x,y,z)
+    const zAxis = prp.subtract(srp).normalize();    // Compute the view plane normal (n)
+    const xAxis = vup.cross(zAxis).normalize();     // Compute the view plane x-axis (u)
+    const yAxis = zAxis.cross(xAxis);              // Compute the view plane y-axis (v)
+    const rotationMatrix = [
+        [xAxis[0], xAxis[1], xAxis[2], 0],
+        [yAxis[0], yAxis[1], yAxis[2], 0],
+        [zAxis[0], zAxis[1], zAxis[2], 0],
+        [0, 0, 0, 1]
+    ];
+
+    // 3. Shear such that CW is on the z-axis (Clip Window)
+    const shearMatrix = [
+        [1, 0, clip[0] / clip[2], 0],
+        [0, 1, clip[1] / clip[2], 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+    ];
+
+    // 4. Scale such that view volume bounds are ([z,-z], [z,-z], [-1,zmin])
+    const scaleMatrix = [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, -1 / (clip[2] - clip[3]), -clip[3] / (clip[2] - clip[3])],
+        [0, 0, 0, 1]
+    ];
+
+    // Combine all transformations
+    const transform = Matrix.multiply(scaleMatrix, shearMatrix, rotationMatrix, translationMatrix);
+
+    return transform;
 }
 
 // create a 4x4 matrix to project a perspective image on the z=-1 plane
@@ -24,9 +55,17 @@ function mat4x4MPer() {
 
 // create a 4x4 matrix to translate/scale projected vertices to the viewport (window)
 function mat4x4Viewport(width, height) {
-    let viewport = new Matrix(4, 4);
-    // viewport.values = ...;
-    // slides: w/2 h/2
+    // Create a new 4x4 identity matrix
+    let viewport = mat4x4Identity();
+
+    // Translate to the center of the viewport
+    viewport[0][3] = width / 2;
+    viewport[1][3] = height / 2;
+
+    // Scale to fit the viewport
+    viewport[0][0] = width / 2;
+    viewport[1][1] = height / 2;
+
     return viewport;
 }
 
