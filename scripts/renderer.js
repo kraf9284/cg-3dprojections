@@ -65,7 +65,9 @@ class Renderer {
         // For each model
         this.scene.models.forEach((model) => {
             // Transform vertices to canonical view volume and then to viewport
-            let new_verts = Object.values(model.vertices).map((vert) => { // Use Object.values() to convert the object to an array
+            let new_verts = [];
+            model.vertices.forEach((vert) => {
+                console.log(this.scene.viewMatrix);
                 // Transform endpoints to canonical view volume
                 let transformedVert = Matrix.multiply(this.scene.viewMatrix, vert);
                 transformedVert = Matrix.multiply(this.scene.projectionMatrix, transformedVert);
