@@ -78,10 +78,12 @@ class Renderer {
             // Transform vertices to canonical view volume and then to viewport
             let new_verts = [];
             model.vertices.forEach((vert) => {
-                console.log(this.scene.viewMatrix);
                 // Transform endpoints to canonical view volume
-                let transformedVert = Matrix.multiply(this.scene.viewMatrix, vert);
-                transformedVert = Matrix.multiply(this.scene.projectionMatrix, transformedVert);
+                console.log(vert);
+                let viewMatrix = CG.mat4x4Perspective(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup, this.scene.view.clip);
+                let projectionMatrix = CG.mat4x4MPer();
+                let transformedVert = Matrix.multiply(viewMatrix, vert);
+                transformedVert = Matrix.multiply(projectionMatrix, transformedVert);
     
                 // Project to 2D
                 let x_proj = transformedVert[0] / transformedVert[3];
