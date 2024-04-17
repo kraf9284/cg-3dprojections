@@ -23,85 +23,85 @@ class Renderer {
         this.prev_time = null;
     }
 
-    //
     updateTransforms(time, delta_time) {
         // TODO: update any transformations needed for animation
     }
 
-    //
     rotateLeft() {
     }
     
-    //
     rotateRight() {
 
     }
     
-    //
     moveLeft() {
-        let toUpdate = CG.mat4x4Identity;
-        this.scene.view.prp = Matrix.multiply(this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]-1));
-        toUpdate = CG.mat4x4Identity;
-        this.scene.view.srp = Matrix.multiply(this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]-1));
+        let toUpdate = new Matrix(4, 4);
+        CG.mat4x4Identity(toUpdate);
+        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]-1)]);
+        CG.mat4x4Identity(toUpdate);
+        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]-1)]);
     }
     
-    //
     moveRight() {
-        let toUpdate = CG.mat4x4Identity;
-        this.scene.view.prp = Matrix.multiply(this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]+1));
-        toUpdate = CG.mat4x4Identity;
-        this.scene.view.srp = Matrix.multiply(this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]+1));
+        let toUpdate = new Matrix(4, 4);
+        CG.mat4x4Identity(toUpdate);
+        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]+1)]);
+        CG.mat4x4Identity(toUpdate);
+        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]+1)]);
     }
     
-    //
     moveBackward() {
-        let toUpdate = CG.mat4x4Identity;
-        this.scene.view.prp = Matrix.multiply(this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0]-1, this.scene.view.prp[1] + 1, this.scene.view.prp[2]));
+        let toUpdate = new Matrix(4, 4);
+        CG.mat4x4Identity(toUpdate);
+        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0]-1, this.scene.view.prp[1] + 1, this.scene.view.prp[2])]);
         toUpdate = CG.mat4x4Identity;
-        this.scene.view.srp = Matrix.multiply(this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0]-1, this.scene.view.srp[1] + 1, this.scene.view.srp[2]));
+        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0]-1, this.scene.view.srp[1] + 1, this.scene.view.srp[2])]);
     }
     
-    //
     moveForward() {
-        let toUpdate = CG.mat4x4Identity;
-        this.scene.view.prp = Matrix.multiply(this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0]+1, this.scene.view.prp[1] + 1, this.scene.view.prp[2]));
+        let toUpdate = new Matrix(4, 4);
         toUpdate = CG.mat4x4Identity;
-        this.scene.view.srp = Matrix.multiply(this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0]+1, this.scene.view.srp[1] + 1, this.scene.view.srp[2]));
+        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0]+1, this.scene.view.prp[1] + 1, this.scene.view.prp[2])]);
+        toUpdate = CG.mat4x4Identity;
+        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0]+1, this.scene.view.srp[1] + 1, this.scene.view.srp[2])]);
     }
 
-    //
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    
+        
+        let perspMat = CG.mat4x4Perspective(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup, this.scene.view.clip);
+        let mPerMat = CG.mat4x4MPer();
+        let vpMat = CG.mat4x4Viewport(this.canvas.width, this.canvas.height);
+
         // For each model
         this.scene.models.forEach((model) => {
             // Transform vertices to canonical view volume and then to viewport
             let new_verts = [];
-            model.vertices.forEach((vert) => {
-                // Transform endpoints to canonical view volume
-                console.log(vert);
-                let viewMatrix = CG.mat4x4Perspective(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup, this.scene.view.clip);
-                let projectionMatrix = CG.mat4x4MPer();
-                let transformedVert = Matrix.multiply(viewMatrix, vert);
-                transformedVert = Matrix.multiply(projectionMatrix, transformedVert);
-    
-                // Project to 2D
-                let x_proj = transformedVert[0] / transformedVert[3];
-                let y_proj = transformedVert[1] / transformedVert[3];
-    
-                // Translate/scale to viewport (window)
-                let x_viewport = (x_proj + 1) * (this.canvas.width / 2);
-                let y_viewport = (1 - y_proj) * (this.canvas.height / 2);
-    
-                return [x_viewport, y_viewport];
-            });
+            for (let i=0; i<model.vertices.length; i++) {
+                // Transform endpoints to canonical view volume & project to 2D
+                let vert = model.vertices[i];
+                let perspVert = Matrix.multiply([perspMat, vert]);
+                let newVert = Matrix.multiply([mPerMat, perspVert]);
+                new_verts.push(newVert);
+            };
     
             // For each line segment in each edge
-            model.edges.forEach((edge) => {
-                // Draw line
-                this.drawLine(new_verts[edge[0]], new_verts[edge[1]]);
-            });
+            for (let i=0; i<model.edges.length; i++) {
+                let edge = model.edges[i];
+                for (let j=0; j<edge.length - 1; j++) {
+                    let v1 = new_verts[edge[j]];
+                    let v2 = new_verts[edge[j + 1]];
+                    
+                    // Translate/scale to viewport
+                    let vpVert1 = Matrix.multiply([vpMat, v1]);
+                    let vpVert2 = Matrix.multiply([vpMat, v2]);
+
+                    this.drawLine(vpVert1.x / vpVert1.w, vpVert1.y / vpVert1.w, vpVert2.x / vpVert2.w, vpVert2.y / vpVert2.w);
+                }
+            }
         });
+
+        // Clip in 2D
     }
     
     
