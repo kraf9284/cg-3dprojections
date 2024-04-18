@@ -54,15 +54,15 @@ class Renderer {
         let toUpdate = new Matrix(4, 4);
         CG.mat4x4Identity(toUpdate);
         this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0]-1, this.scene.view.prp[1] + 1, this.scene.view.prp[2])]);
-        toUpdate = CG.mat4x4Identity;
+        CG.mat4x4Identity(toUpdate);
         this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0]-1, this.scene.view.srp[1] + 1, this.scene.view.srp[2])]);
     }
     
     moveForward() {
         let toUpdate = new Matrix(4, 4);
-        toUpdate = CG.mat4x4Identity;
+        CG.mat4x4Identity(toUpdate);
         this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0]+1, this.scene.view.prp[1] + 1, this.scene.view.prp[2])]);
-        toUpdate = CG.mat4x4Identity;
+        CG.mat4x4Identity(toUpdate);
         this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0]+1, this.scene.view.srp[1] + 1, this.scene.view.srp[2])]);
     }
 
@@ -74,10 +74,11 @@ class Renderer {
         let vpMat = CG.mat4x4Viewport(this.canvas.width, this.canvas.height);
 
         // For each model
-        this.scene.models.forEach((model) => {
+        for (let m = 0; m < this.scene.models.length; m++) {
+            let model = this.scene.models[m];
             // Transform vertices to canonical view volume and then to viewport
             let new_verts = [];
-            for (let i=0; i<model.vertices.length; i++) {
+            for (let i=0; i < model.vertices.length; i++) {
                 // Transform endpoints to canonical view volume & project to 2D
                 let vert = model.vertices[i];
                 let perspVert = Matrix.multiply([perspMat, vert]);
@@ -86,20 +87,20 @@ class Renderer {
             };
     
             // For each line segment in each edge
-            for (let i=0; i<model.edges.length; i++) {
+            for (let i = 0; i < model.edges.length; i++) {
                 let edge = model.edges[i];
-                for (let j=0; j<edge.length - 1; j++) {
+
+                for (let j = 0; j < edge.length - 1; j++) {
                     let v1 = new_verts[edge[j]];
                     let v2 = new_verts[edge[j + 1]];
                     
                     // Translate/scale to viewport
                     let vpVert1 = Matrix.multiply([vpMat, v1]);
                     let vpVert2 = Matrix.multiply([vpMat, v2]);
-
                     this.drawLine(vpVert1.x / vpVert1.w, vpVert1.y / vpVert1.w, vpVert2.x / vpVert2.w, vpVert2.y / vpVert2.w);
                 }
             }
-        });
+        }
 
         // Clip in 2D
     }
@@ -217,8 +218,54 @@ class Renderer {
                         model.animation = JSON.parse(JSON.stringify(scene.models[i].animation));
                     }
                 }
-            }
-            else {
+            } else if (model.type === 'cube') {
+                let cube = scene.models[i];
+
+                let halfWidth = cube.width / 2;
+                let halfHeight = cube.height / 2;
+                let halfDepth = cube.depth / 2;
+
+                let centerX = model.center[0];
+                let centerY = model.center[1];
+                let centerZ = model.center[2];
+
+                model.vertices = [];
+                for (let s = 1; s >= -1; s -= 2) {
+                    model.vertices.push(CG.Vector4(
+                                        centerX - halfWidth,
+                                        centerY + halfHeight,
+                                        centerZ + s * halfDepth,
+                                        1));
+                    model.vertices.push(CG.Vector4(
+                                        centerX + halfWidth,
+                                        centerY + halfHeight,
+                                        centerZ + s * halfDepth,
+                                        1));
+                    model.vertices.push(CG.Vector4(
+                                        centerX + halfWidth,
+                                        centerY - halfHeight,
+                                        centerZ + s * halfDepth,
+                                        1));
+                    model.vertices.push(CG.Vector4(
+                                        centerX - halfWidth,
+                                        centerY - halfHeight,
+                                        centerZ + s * halfDepth,
+                                        1));
+                }
+                model.edges = [];
+                model.edges.push([0, 1, 2, 3, 0]);
+                model.edges.push([4, 5, 6, 7, 4]);
+                
+                model.edges.push([0, 4]);
+                model.edges.push([1, 5]);
+                model.edges.push([2, 6]);
+                model.edges.push([3, 7]);
+
+                if (scene.models[i].hasOwnProperty('animation')) {
+                    model.animation = JSON.parse(JSON.stringify(scene.models[i].animation));
+                }
+                
+            } else {
                 model.center = CG.Vector4(scene.models[i].center[0],
                                        scene.models[i].center[1],
                                        scene.models[i].center[2],
@@ -229,7 +276,6 @@ class Renderer {
                     }
                 }
             }
-
             model.matrix = new Matrix(4, 4);
             processed.models.push(model);
         }
