@@ -37,37 +37,43 @@ class Renderer {
     moveLeft() {
         let toUpdate = new Matrix(4, 4);
         CG.mat4x4Identity(toUpdate);
-        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]-1)]);
+        this.scene.view.prp = Matrix.multiply(this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]-1));
         CG.mat4x4Identity(toUpdate);
-        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]-1)]);
+        this.scene.view.srp = Matrix.multiply(this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]-1));
+        console.log(this.scene.view.prp);
+        console.log(this.scene.view.srp);
     }
     
     moveRight() {
+        // this.scene.view.prp[2] +=1;
+        // this.scene.view.srp[2] +=1;
+        // console.log(this.scene.view.prp[2]);
         let toUpdate = new Matrix(4, 4);
         CG.mat4x4Identity(toUpdate);
-        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]+1)]);
+        this.scene.view.prp = Matrix.multiply(this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]+1));
         CG.mat4x4Identity(toUpdate);
-        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]+1)]);
+        this.scene.view.srp = Matrix.multiply(this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]+1));
     }
     
     moveBackward() {
         let toUpdate = new Matrix(4, 4);
         CG.mat4x4Identity(toUpdate);
-        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0]-1, this.scene.view.prp[1] + 1, this.scene.view.prp[2])]);
+        this.scene.view.prp = Matrix.multiply(this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0]-1, this.scene.view.prp[1] + 1, this.scene.view.prp[2]));
         toUpdate = CG.mat4x4Identity;
-        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0]-1, this.scene.view.srp[1] + 1, this.scene.view.srp[2])]);
+        this.scene.view.srp = Matrix.multiply(this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0]-1, this.scene.view.srp[1] + 1, this.scene.view.srp[2]));
     }
     
     moveForward() {
         let toUpdate = new Matrix(4, 4);
         toUpdate = CG.mat4x4Identity;
-        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0]+1, this.scene.view.prp[1] + 1, this.scene.view.prp[2])]);
+        this.scene.view.prp = Matrix.multiply(this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0]+1, this.scene.view.prp[1] + 1, this.scene.view.prp[2]));
         toUpdate = CG.mat4x4Identity;
-        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0]+1, this.scene.view.srp[1] + 1, this.scene.view.srp[2])]);
+        this.scene.view.srp = Matrix.multiply(this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0]+1, this.scene.view.srp[1] + 1, this.scene.view.srp[2]));
     }
 
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
         
         let perspMat = CG.mat4x4Perspective(this.scene.view.prp, this.scene.view.srp, this.scene.view.vup, this.scene.view.clip);
         let mPerMat = CG.mat4x4MPer();
@@ -125,6 +131,7 @@ class Renderer {
         else if (vertex.x > (-vertex.z + FLOAT_EPSILON)) {
             outcode += RIGHT;
         }
+
         if (vertex.y < (vertex.z - FLOAT_EPSILON)) {
             outcode += BOTTOM;
         }
@@ -152,8 +159,54 @@ class Renderer {
         let out1 = this.outcodePerspective(p1, z_min);
         
         // TODO: implement clipping here!
-        
+        //both are in the window
+        if((out0 == 0) && (out1 == 0)){return line}
+        //both are out the window
+        else if(out0 == out1){return result}
+        // at least some part of the line is in the window
+        else{
+            //both points are outside of window but part of the line is within the window
+            if(out0 != 0 && out1 != 0){
+                
+            }
+           // else one of them is outside the window
+            else {
+                let outLook = null;
+                 //out0 is outside of window and out1 is inside window
+                if(out0 != 0){
+                    outLook = out0;
+                }
+                //out1 is outside of window and out0 is inside window
+                else{
+                    outLook = out1;
+                }
+                // if outlook is on top T = (y0+z0)/(-deltaY - deltaZ)
+                if(outLook == TOP){
+                   
+                }
+                // if outlook is on bottom T=(-y0+z0)/(deltaY - deltaz)
+                else if(outLook == BOTTOM){
+
+                }
+                // outlook is right T = (x0+z0)/(-deltaX - deltaz)
+                else if(outLook == RIGHT){
+
+                }
+                // outlook is left T = (-x0+z0)/(deltaX - deltaZ)
+                else if(outLook == LEFT){
+
+                }
+                //outlook is near T =(z0-zMin)/(-deltaZ)
+                else if(outLook == NEAR){
+
+                }
+                // outlook is far T = (-z0-1)/(deltaZ)
+                else{
+
+                }
+            }    
         return result;
+        }
     }
 
     //
