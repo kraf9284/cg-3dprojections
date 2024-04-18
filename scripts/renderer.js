@@ -28,6 +28,7 @@ class Renderer {
     }
 
     rotateLeft() {
+
     }
     
     rotateRight() {
@@ -35,38 +36,31 @@ class Renderer {
     }
     
     moveLeft() {
-        let toUpdate = new Matrix(4, 4);
-        CG.mat4x4Identity(toUpdate);
-        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]-1)]);
-        CG.mat4x4Identity(toUpdate);
-        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]-1)]);
-    }
+        // Translate the PRP left along the x-axis
+        let t1 = new Matrix(4, 4);
+        CG.mat4x4Translate(t1, prp.x-1, prp.y, prp.z);
+    
+        // Translate the SRP left along the x-axis
+        let t2 = new Matrix(4, 4);
+        CG.mat4x4Translate(t2, srp.x-1, srp.y, srp.z);
+    }    
     
     moveRight() {
-        // this.scene.view.prp[2] +=1;
-        // this.scene.view.srp[2] +=1;
-        // console.log(this.scene.view.prp[2]);
-        let toUpdate = new Matrix(4, 4);
-        CG.mat4x4Identity(toUpdate);
-        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]+1)]);
-        CG.mat4x4Identity(toUpdate);
-        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]+1)]);
+        // Translate the PRP right along the x-axis
+        let t1 = new Matrix(4, 4);
+        CG.mat4x4Translate(t1, prp.x+1, prp.y, prp.z);
+    
+        // Translate the SRP right along the x-axis
+        let t2 = new Matrix(4, 4);
+        CG.mat4x4Translate(t2, srp.x+1, srp.y, srp.z);
     }
     
     moveBackward() {
-        let toUpdate = new Matrix(4, 4);
-        CG.mat4x4Identity(toUpdate);
-        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0]-1, this.scene.view.prp[1] + 1, this.scene.view.prp[2])]);
-        CG.mat4x4Identity(toUpdate);
-        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0]-1, this.scene.view.srp[1] + 1, this.scene.view.srp[2])]);
+        
     }
     
     moveForward() {
-        let toUpdate = new Matrix(4, 4);
-        CG.mat4x4Identity(toUpdate);
-        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0]+1, this.scene.view.prp[1] + 1, this.scene.view.prp[2])]);
-        CG.mat4x4Identity(toUpdate);
-        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0]+1, this.scene.view.srp[1] + 1, this.scene.view.srp[2])]);
+        
     }
 
     draw() {

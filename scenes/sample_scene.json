@@ -8,7 +8,7 @@
     "models": [
         {
             "type": "cube",
-            "center": [4, 4, -10],
+            "center": [0, 0, -10],
             "width": 8,
             "height": 8,
             "depth": 8
