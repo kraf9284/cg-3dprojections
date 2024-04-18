@@ -3,22 +3,22 @@
         "prp": [0, 0, 10],
         "srp": [0, 0, 0],
         "vup": [0, 1, 0],
-        "clip": [-4, 20, -1, 17, 5, 75]
+        "clip": [-15, 25, -15, 25, -55, 5]
     },
     "models": [
         {
             "type": "cube",
-            "center": [0, 0, -10],
-            "width": 8,
-            "height": 8,
-            "depth": 8
+            "center": [-5, -5, -10],
+            "width": 4,
+            "height": 4,
+            "depth": 4
         },
         {
             "type": "cylinder",
-            "center": [12, 10, -49],
-            "radius": 1.5,
-            "height": 5,
-            "sides": 12,
+            "center": [-7, -6, -2],
+            "radius": 1,
+            "height": 4,
+            "sides": 20,
             "animation": {
                 "axis": "y",
                 "rps": 0.5

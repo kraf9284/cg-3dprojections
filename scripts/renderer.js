@@ -45,7 +45,7 @@ class Renderer {
         // Translate the SRP left along the x-axis
         let t2 = new Matrix(4, 4);
         CG.mat4x4Translate(t2, srp.x-1, srp.y, srp.z);
-    }    
+    }
     
     moveRight() {
         let prp = this.scene.view.prp;
@@ -374,36 +374,34 @@ class Renderer {
                     let sliceAngle = (j / slices) * Math.PI;
                     let sliceRadius = radius * Math.sin(sliceAngle);
                     let y = centerY + radius * Math.cos(sliceAngle);
-            
+
                     for (let k = 0; k < stacks; k++) {
                         let stackAngle = (k / stacks) * 2 * Math.PI;
                         let x = centerX + sliceRadius * Math.cos(stackAngle);
                         let z = centerZ + sliceRadius * Math.sin(stackAngle);
                         model.vertices.push(CG.Vector4(x, y, z, 1));
+
+                        // For the top circle, add an extra vertex at the top center of the sphere
+                        if (j === 0) {
+                            model.vertices.push(CG.Vector4(centerX, centerY - radius, centerZ, 1));
+                        }
                     }
                 }
+
                 
                 model.edges = [];
                 // Generate edges
                 for (let j = 0; j < slices; j++) {
-                    for (let j = 0; j < stacks; j++) {
-                        let nextSliceInd = (j + 1) * stacks;
-                        let nextStackInd = (j + 1) % stacks;
-            
-                        let currentVertInd = j * stacks + j;
-                        let nextSliceVertInd = nextSliceInd + j;
-                        let nextStackVertInd = j * stacks + nextStackInd;
-            
+                    for (let k = 0; k < stacks; k++) { // Use different loop variable for stacks
+                        let currentVertInd = j * stacks + k;
+                        let nextSliceVertInd = ((j + 1) % slices) * stacks + k;
+                        let nextStackVertInd = (j * stacks + (k + 1)) % (slices * stacks);
+
                         model.edges.push([currentVertInd, nextSliceVertInd]);
                         model.edges.push([currentVertInd, nextStackVertInd]);
-            
-                        // If not the last slice, connect to the next slice
-                        if (j !== slices - 1) {
-                            let nextSliceStackInd = nextSliceInd + nextStackInd;
-                            model.edges.push([currentVertInd, nextSliceStackInd]);
-                        }
                     }
                 }
+
             } else if (model.type === 'cone') {
                 let cone = scene.models[i];
                 let centerX = cone.center[0];
@@ -416,14 +414,14 @@ class Renderer {
             
                 model.vertices = [];            
                 // Vertex for the tip
-                let tipVertex = CG.Vector4(centerX, centerY + height / 2, centerZ, 1);
+                let tipVertex = CG.Vector4(centerX, centerY - height / 2, centerZ, 1);
                 model.vertices.push(tipVertex);
             
                 // Vertices for the base circle
                 for (let j = 0; j < sides; j++) {
                     let angle = (j / sides) * Math.PI * 2;
                     let x = centerX + radius * Math.cos(angle);
-                    let y = centerY - height / 2;
+                    let y = centerY + height / 2;
                     let z = centerZ + radius * Math.sin(angle);
                     model.vertices.push(CG.Vector4(x, y, z, 1));
                 }
