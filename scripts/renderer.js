@@ -36,20 +36,24 @@ class Renderer {
     }
     
     moveLeft() {
+        let prp = this.scene.view.prp;
         // Translate the PRP left along the x-axis
         let t1 = new Matrix(4, 4);
         CG.mat4x4Translate(t1, prp.x-1, prp.y, prp.z);
     
+        let srp = this.scene.view.srp;
         // Translate the SRP left along the x-axis
         let t2 = new Matrix(4, 4);
         CG.mat4x4Translate(t2, srp.x-1, srp.y, srp.z);
     }    
     
     moveRight() {
+        let prp = this.scene.view.prp;
         // Translate the PRP right along the x-axis
         let t1 = new Matrix(4, 4);
         CG.mat4x4Translate(t1, prp.x+1, prp.y, prp.z);
     
+        let srp = this.scene.view.srp;
         // Translate the SRP right along the x-axis
         let t2 = new Matrix(4, 4);
         CG.mat4x4Translate(t2, srp.x+1, srp.y, srp.z);
