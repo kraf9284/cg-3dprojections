@@ -37,11 +37,9 @@ class Renderer {
     moveLeft() {
         let toUpdate = new Matrix(4, 4);
         CG.mat4x4Identity(toUpdate);
-        this.scene.view.prp = Matrix.multiply(this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]-1));
+        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]-1)]);
         CG.mat4x4Identity(toUpdate);
-        this.scene.view.srp = Matrix.multiply(this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]-1));
-        console.log(this.scene.view.prp);
-        console.log(this.scene.view.srp);
+        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]-1)]);
     }
     
     moveRight() {
@@ -50,9 +48,9 @@ class Renderer {
         // console.log(this.scene.view.prp[2]);
         let toUpdate = new Matrix(4, 4);
         CG.mat4x4Identity(toUpdate);
-        this.scene.view.prp = Matrix.multiply(this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]+1));
+        this.scene.view.prp = Matrix.multiply([this.scene.view.prp, CG.mat4x4Translate(toUpdate, this.scene.view.prp[0], this.scene.view.prp[1], this.scene.view.prp[2]+1)]);
         CG.mat4x4Identity(toUpdate);
-        this.scene.view.srp = Matrix.multiply(this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]+1));
+        this.scene.view.srp = Matrix.multiply([this.scene.view.srp, CG.mat4x4Translate(toUpdate, this.scene.view.srp[0], this.scene.view.srp[1], this.scene.view.srp[2]+1)]);
     }
     
     moveBackward() {
@@ -84,7 +82,7 @@ class Renderer {
             let model = this.scene.models[m];
             // Transform vertices to canonical view volume and then to viewport
             let new_verts = [];
-            for (let i=0; i < model.vertices.length; i++) {
+            for (let i = 0; i < model.vertices.length; i++) {
                 // Transform endpoints to canonical view volume & project to 2D
                 let vert = model.vertices[i];
                 let perspVert = Matrix.multiply([perspMat, vert]);
@@ -278,9 +276,9 @@ class Renderer {
                 let halfHeight = cube.height / 2;
                 let halfDepth = cube.depth / 2;
 
-                let centerX = model.center[0];
-                let centerY = model.center[1];
-                let centerZ = model.center[2];
+                let centerX = cube.center[0];
+                let centerY = cube.center[1];
+                let centerZ = cube.center[2];
 
                 model.vertices = [];
                 for (let s = 1; s >= -1; s -= 2) {
@@ -318,6 +316,132 @@ class Renderer {
                     model.animation = JSON.parse(JSON.stringify(scene.models[i].animation));
                 }
                 
+            } else if (model.type === 'cylinder') {
+                let cyl = scene.models[i];
+
+                let centerX = cyl.center[0];
+                let centerY = cyl.center[1];
+                let centerZ = cyl.center[2];
+
+                let radius = cyl.radius;
+                let height = cyl.height;
+                let sides = cyl.sides;
+            
+                model.vertices = [];
+
+                // Vertices for the bottom circle
+                for (let j = 0; j < sides; j++) {
+                    let angle = (j / sides) * Math.PI * 2;
+                    let x = centerX + radius * Math.cos(angle);
+                    let y = centerY - height / 2;
+                    let z = centerZ + radius * Math.sin(angle);
+                    model.vertices.push(CG.Vector4(x, y, z, 1));
+                }
+            
+                // Vertices for the top circle
+                for (let j = 0; j < sides; j++) {
+                    let angle = (j / sides) * Math.PI * 2;
+                    let x = centerX + radius * Math.cos(angle);
+                    let y = centerY + height / 2;
+                    let z = centerZ + radius * Math.sin(angle);
+                    model.vertices.push(CG.Vector4(x, y, z, 1));
+                }
+            
+                model.edges = [];
+
+                // Connect bottom and top circles
+                for (let j = 0; j < sides; j++) {
+                    model.edges.push([j, (j + 1) % sides]);
+                    model.edges.push([j + sides, ((j + 1) % sides) + sides]);
+                    model.edges.push([j, j + sides]);
+                }
+
+                if (scene.models[i].hasOwnProperty('animation')) {
+                    model.animation = JSON.parse(JSON.stringify(scene.models[i].animation));
+                }
+                
+            } else if (model.type === 'sphere') {
+                let sphere = scene.models[i];
+                let centerX = sphere.center[0];
+                let centerY = sphere.center[1];
+                let centerZ = sphere.center[2];
+
+                let radius = sphere.radius;
+                let slices = sphere.slices;
+                let stacks = sphere.stacks;
+            
+                model.vertices = [];  
+                // Generate vertices
+                for (let j = 0; j <= slices; j++) {
+                    let sliceAngle = (j / slices) * Math.PI;
+                    let sliceRadius = radius * Math.sin(sliceAngle);
+                    let y = centerY + radius * Math.cos(sliceAngle);
+            
+                    for (let k = 0; k < stacks; k++) {
+                        let stackAngle = (k / stacks) * 2 * Math.PI;
+                        let x = centerX + sliceRadius * Math.cos(stackAngle);
+                        let z = centerZ + sliceRadius * Math.sin(stackAngle);
+                        model.vertices.push(CG.Vector4(x, y, z, 1));
+                    }
+                }
+                
+                model.edges = [];
+                // Generate edges
+                for (let j = 0; j < slices; j++) {
+                    for (let j = 0; j < stacks; j++) {
+                        let nextSliceInd = (j + 1) * stacks;
+                        let nextStackInd = (j + 1) % stacks;
+            
+                        let currentVertInd = j * stacks + j;
+                        let nextSliceVertInd = nextSliceInd + j;
+                        let nextStackVertInd = j * stacks + nextStackInd;
+            
+                        model.edges.push([currentVertInd, nextSliceVertInd]);
+                        model.edges.push([currentVertInd, nextStackVertInd]);
+            
+                        // If not the last slice, connect to the next slice
+                        if (j !== slices - 1) {
+                            let nextSliceStackInd = nextSliceInd + nextStackInd;
+                            model.edges.push([currentVertInd, nextSliceStackInd]);
+                        }
+                    }
+                }
+            } else if (model.type === 'cone') {
+                let cone = scene.models[i];
+                let centerX = cone.center[0];
+                let centerY = cone.center[1];
+                let centerZ = cone.center[2];
+
+                let radius = cone.radius;
+                let height = cone.height;
+                let sides = cone.sides;
+            
+                model.vertices = [];            
+                // Vertex for the tip
+                let tipVertex = CG.Vector4(centerX, centerY + height / 2, centerZ, 1);
+                model.vertices.push(tipVertex);
+            
+                // Vertices for the base circle
+                for (let j = 0; j < sides; j++) {
+                    let angle = (j / sides) * Math.PI * 2;
+                    let x = centerX + radius * Math.cos(angle);
+                    let y = centerY - height / 2;
+                    let z = centerZ + radius * Math.sin(angle);
+                    model.vertices.push(CG.Vector4(x, y, z, 1));
+                }
+                
+                model.edges = [];
+                // Connect tip to base vertices
+                for (let j = 1; j <= sides; j++) {
+                    model.edges.push([0, j]);
+                }
+            
+                // Connect base vertices to form the circular base
+                for (let j = 1; j < sides; j++) {
+                    model.edges.push([j, j + 1]);
+                }
+                model.edges.push([sides, 1]); // Connect last base vertex to the first
+
             } else {
                 model.center = CG.Vector4(scene.models[i].center[0],
                                        scene.models[i].center[1],
